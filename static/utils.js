@@ -1,0 +1,1 @@
+export const helper = (a) => console.log(a);

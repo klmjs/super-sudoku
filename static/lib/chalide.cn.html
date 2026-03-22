@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<!-- saved from url=(0021)http://www.kalide.cn/ -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线数独解题工具 chalide.cn</title>
+<meta name="author" content="yujianyue, 15058593138@qq.com">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section h3 {
+            margin-bottom: 15px;
+            color: #4facfe;
+            font-size: 18px;
+        }
+
+        .sudoku-input {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            max-width: 360px;
+            margin: 0 auto 20px;
+            background: #333;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .sudoku-cell {
+            width: 100%;
+            height: 35px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .sudoku-cell:focus {
+            outline: 2px solid #4facfe;
+            background: #f0f8ff;
+        }
+
+        .sudoku-cell.error {
+            border: 2px solid #ff4757;
+            background: #ffe6e6;
+        }
+
+        .sudoku-cell:nth-child(3n) {
+            border-right: 2px solid #333;
+        }
+
+        .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #333;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            margin: 0 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79,172,254,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79,172,254,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .result-section {
+            margin-top: 30px;
+        }
+
+        .result-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-info h4 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .info-item .label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .info-item .value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .sudoku-result {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            max-width: 360px;
+            margin: 0 auto 20px;
+            background: #333;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .result-cell {
+            width: 100%;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .result-cell.original {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .result-cell.calculated {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .result-cell.enumerated {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .result-cell:nth-child(3n) {
+            border-right: 2px solid #333;
+        }
+
+        .result-cell:nth-child(n+19):nth-child(-n+27),
+        .result-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #333;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+
+        .legend-color.original {
+            background: #f5f5f5;
+        }
+
+        .legend-color.calculated {
+            background: #e3f2fd;
+        }
+
+        .legend-color.enumerated {
+            background: #e8f5e8;
+        }
+
+        .example-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .example-section h4 {
+            margin-bottom: 15px;
+            color: #4facfe;
+        }
+
+        .example-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .example-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .example-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .sudoku-input, .sudoku-result {
+                max-width: 300px;
+            }
+            
+            .sudoku-cell, .result-cell {
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 13px;
+                margin: 5px;
+            }
+            
+            .legend {
+                gap: 10px;
+            }
+            
+            .legend-item {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>在线数独解题工具</h1>
+            <p>智能模拟人类逐步解题思路，先易后难</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h3>输入数独题目</h3>
+                <div class="sudoku-input" id="sudokuInput"><input type="text" class="sudoku-cell" maxlength="1" id="cell_0"><input type="text" class="sudoku-cell" maxlength="1" id="cell_1"><input type="text" class="sudoku-cell" maxlength="1" id="cell_2"><input type="text" class="sudoku-cell" maxlength="1" id="cell_3"><input type="text" class="sudoku-cell" maxlength="1" id="cell_4"><input type="text" class="sudoku-cell" maxlength="1" id="cell_5"><input type="text" class="sudoku-cell" maxlength="1" id="cell_6"><input type="text" class="sudoku-cell" maxlength="1" id="cell_7"><input type="text" class="sudoku-cell" maxlength="1" id="cell_8"><input type="text" class="sudoku-cell" maxlength="1" id="cell_9"><input type="text" class="sudoku-cell" maxlength="1" id="cell_10"><input type="text" class="sudoku-cell" maxlength="1" id="cell_11"><input type="text" class="sudoku-cell" maxlength="1" id="cell_12"><input type="text" class="sudoku-cell" maxlength="1" id="cell_13"><input type="text" class="sudoku-cell" maxlength="1" id="cell_14"><input type="text" class="sudoku-cell" maxlength="1" id="cell_15"><input type="text" class="sudoku-cell" maxlength="1" id="cell_16"><input type="text" class="sudoku-cell" maxlength="1" id="cell_17"><input type="text" class="sudoku-cell" maxlength="1" id="cell_18"><input type="text" class="sudoku-cell" maxlength="1" id="cell_19"><input type="text" class="sudoku-cell" maxlength="1" id="cell_20"><input type="text" class="sudoku-cell" maxlength="1" id="cell_21"><input type="text" class="sudoku-cell" maxlength="1" id="cell_22"><input type="text" class="sudoku-cell" maxlength="1" id="cell_23"><input type="text" class="sudoku-cell" maxlength="1" id="cell_24"><input type="text" class="sudoku-cell" maxlength="1" id="cell_25"><input type="text" class="sudoku-cell" maxlength="1" id="cell_26"><input type="text" class="sudoku-cell" maxlength="1" id="cell_27"><input type="text" class="sudoku-cell" maxlength="1" id="cell_28"><input type="text" class="sudoku-cell" maxlength="1" id="cell_29"><input type="text" class="sudoku-cell" maxlength="1" id="cell_30"><input type="text" class="sudoku-cell" maxlength="1" id="cell_31"><input type="text" class="sudoku-cell" maxlength="1" id="cell_32"><input type="text" class="sudoku-cell" maxlength="1" id="cell_33"><input type="text" class="sudoku-cell" maxlength="1" id="cell_34"><input type="text" class="sudoku-cell" maxlength="1" id="cell_35"><input type="text" class="sudoku-cell" maxlength="1" id="cell_36"><input type="text" class="sudoku-cell" maxlength="1" id="cell_37"><input type="text" class="sudoku-cell" maxlength="1" id="cell_38"><input type="text" class="sudoku-cell" maxlength="1" id="cell_39"><input type="text" class="sudoku-cell" maxlength="1" id="cell_40"><input type="text" class="sudoku-cell" maxlength="1" id="cell_41"><input type="text" class="sudoku-cell" maxlength="1" id="cell_42"><input type="text" class="sudoku-cell" maxlength="1" id="cell_43"><input type="text" class="sudoku-cell" maxlength="1" id="cell_44"><input type="text" class="sudoku-cell" maxlength="1" id="cell_45"><input type="text" class="sudoku-cell" maxlength="1" id="cell_46"><input type="text" class="sudoku-cell" maxlength="1" id="cell_47"><input type="text" class="sudoku-cell" maxlength="1" id="cell_48"><input type="text" class="sudoku-cell" maxlength="1" id="cell_49"><input type="text" class="sudoku-cell" maxlength="1" id="cell_50"><input type="text" class="sudoku-cell" maxlength="1" id="cell_51"><input type="text" class="sudoku-cell" maxlength="1" id="cell_52"><input type="text" class="sudoku-cell" maxlength="1" id="cell_53"><input type="text" class="sudoku-cell" maxlength="1" id="cell_54"><input type="text" class="sudoku-cell" maxlength="1" id="cell_55"><input type="text" class="sudoku-cell" maxlength="1" id="cell_56"><input type="text" class="sudoku-cell" maxlength="1" id="cell_57"><input type="text" class="sudoku-cell" maxlength="1" id="cell_58"><input type="text" class="sudoku-cell" maxlength="1" id="cell_59"><input type="text" class="sudoku-cell" maxlength="1" id="cell_60"><input type="text" class="sudoku-cell" maxlength="1" id="cell_61"><input type="text" class="sudoku-cell" maxlength="1" id="cell_62"><input type="text" class="sudoku-cell" maxlength="1" id="cell_63"><input type="text" class="sudoku-cell" maxlength="1" id="cell_64"><input type="text" class="sudoku-cell" maxlength="1" id="cell_65"><input type="text" class="sudoku-cell" maxlength="1" id="cell_66"><input type="text" class="sudoku-cell" maxlength="1" id="cell_67"><input type="text" class="sudoku-cell" maxlength="1" id="cell_68"><input type="text" class="sudoku-cell" maxlength="1" id="cell_69"><input type="text" class="sudoku-cell" maxlength="1" id="cell_70"><input type="text" class="sudoku-cell" maxlength="1" id="cell_71"><input type="text" class="sudoku-cell" maxlength="1" id="cell_72"><input type="text" class="sudoku-cell" maxlength="1" id="cell_73"><input type="text" class="sudoku-cell" maxlength="1" id="cell_74"><input type="text" class="sudoku-cell" maxlength="1" id="cell_75"><input type="text" class="sudoku-cell" maxlength="1" id="cell_76"><input type="text" class="sudoku-cell" maxlength="1" id="cell_77"><input type="text" class="sudoku-cell" maxlength="1" id="cell_78"><input type="text" class="sudoku-cell" maxlength="1" id="cell_79"><input type="text" class="sudoku-cell" maxlength="1" id="cell_80"></div>
+                
+                <div class="controls">
+                    <button class="btn" onclick="solveSudoku()">开始解题</button>
+                    <button class="btn btn-secondary" onclick="clearSudoku()">清空</button>
+                    <button class="btn btn-secondary" onclick="loadExample(0)">示例输入</button>
+                    <button class="btn btn-secondary" onclick="validateInput()">题目验证</button>
+                </div>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            
+            <div id="resultSection" class="result-section" style="display: none;">
+                <div class="result-info">
+                    <h4>解题结果</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="label">需填格数</div>
+                            <div class="value" id="emptyCount">0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">直接得值</div>
+                            <div class="value" id="directCount">0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">答案数</div>
+                            <div class="value" id="solutionCount">0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">耗时</div>
+                            <div class="value" id="solveTime">0ms</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color original"></div>
+                        <span>原题目</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color calculated"></div>
+                        <span>排除法得值</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color enumerated"></div>
+                        <span>枚举法得值</span>
+                    </div>
+                </div>
+
+                <div id="solutions"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentSudoku = Array(81).fill(0);
+        let solutionData = null;
+
+        // 示例题目
+        const examples = [
+            // 简单
+            [5,3,0,0,7,0,0,0,0,6,0,0,1,9,5,0,0,0,0,9,8,0,0,0,0,6,0,8,0,0,0,6,0,0,0,3,4,0,0,8,0,3,0,0,1,7,0,0,0,2,0,0,0,6,0,6,0,0,0,0,2,8,0,0,0,0,4,1,9,0,0,5,0,0,0,0,8,0,0,7,9],
+            // 中等
+            [5,3,0,0,7,0,0,0,0,6,0,0,1,9,5,0,0,0,0,9,8,0,0,0,0,6,0,8,0,0,0,6,0,0,0,3,4,0,0,8,0,3,0,0,1,7,0,0,0,2,0,0,0,6,0,6,0,0,0,0,2,8,0,0,0,0,4,1,9,0,0,5,0,0,0,0,8,0,0,7,9],
+            // 困难
+            [0,0,0,0,0,0,6,8,0,0,0,0,0,0,3,0,0,0,7,0,0,0,9,0,5,0,0,5,7,0,0,0,0,0,0,0,0,0,0,0,4,5,7,0,0,0,0,0,1,0,0,0,3,0,0,0,1,0,0,0,0,6,8,0,0,8,5,0,0,0,1,0,0,9,0,0,0,0,4,0,0],
+            // 专家
+            [0,0,0,0,0,0,0,1,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0]
+        ];
+
+        // 初始化页面
+        function initializePage() {
+            createSudokuInput();
+        }
+
+        // 创建数独输入网格
+        function createSudokuInput() {
+            const container = document.getElementById('sudokuInput');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 81; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'sudoku-cell';
+                input.maxLength = 1;
+                input.id = `cell_${i}`;
+                input.oninput = handleInput;
+                input.onkeydown = handleKeyDown;
+                container.appendChild(input);
+            }
+        }
+
+        // 处理输入
+        function handleInput(event) {
+            const value = event.target.value;
+            const index = parseInt(event.target.id.split('_')[1]);
+            
+            if (value === '' || (value >= '1' && value <= '9')) {
+                currentSudoku[index] = value === '' ? 0 : parseInt(value);
+                event.target.classList.remove('error');
+            } else {
+                event.target.value = '';
+                currentSudoku[index] = 0;
+            }
+        }
+
+        // 处理键盘导航
+        function handleKeyDown(event) {
+            const index = parseInt(event.target.id.split('_')[1]);
+            let newIndex = index;
+            
+            switch(event.key) {
+                case 'ArrowUp':
+                    newIndex = Math.max(0, index - 9);
+                    break;
+                case 'ArrowDown':
+                    newIndex = Math.min(80, index + 9);
+                    break;
+                case 'ArrowLeft':
+                    newIndex = Math.max(0, index - 1);
+                    break;
+                case 'ArrowRight':
+                    newIndex = Math.min(80, index + 1);
+                    break;
+                default:
+                    return;
+            }
+            
+            event.preventDefault();
+            document.getElementById(`cell_${newIndex}`).focus();
+        }
+
+        // 验证输入
+        function validateInput() {
+            const errors = [];
+            const cells = document.querySelectorAll('.sudoku-cell');
+            
+            // 清除之前的错误状态
+            cells.forEach(cell => cell.classList.remove('error'));
+            
+            // 检查每个单元格
+            for (let i = 0; i < 81; i++) {
+                const value = currentSudoku[i];
+                if (value === 0) continue;
+                
+                const row = Math.floor(i / 9);
+                const col = i % 9;
+                const boxRow = Math.floor(row / 3);
+                const boxCol = Math.floor(col / 3);
+                
+                // 检查行冲突
+                for (let j = 0; j < 9; j++) {
+                    const checkIndex = row * 9 + j;
+                    if (j !== col && currentSudoku[checkIndex] === value) {
+                        errors.push(i);
+                        errors.push(checkIndex);
+                    }
+                }
+                
+                // 检查列冲突
+                for (let j = 0; j < 9; j++) {
+                    const checkIndex = j * 9 + col;
+                    if (j !== row && currentSudoku[checkIndex] === value) {
+                        errors.push(i);
+                        errors.push(checkIndex);
+                    }
+                }
+                
+                // 检查九宫格冲突
+                for (let j = 0; j < 3; j++) {
+                    for (let k = 0; k < 3; k++) {
+                        const checkRow = boxRow * 3 + j;
+                        const checkCol = boxCol * 3 + k;
+                        const checkIndex = checkRow * 9 + checkCol;
+                        if (checkIndex !== i && currentSudoku[checkIndex] === value) {
+                            errors.push(i);
+                            errors.push(checkIndex);
+                        }
+                    }
+                }
+            }
+            
+            // 显示错误
+            const uniqueErrors = [...new Set(errors)];
+            uniqueErrors.forEach(index => {
+                document.getElementById(`cell_${index}`).classList.add('error');
+            });
+            
+            if (uniqueErrors.length > 0) {
+                showError(`发现 ${uniqueErrors.length} 个冲突的格子，请检查标红的位置`);
+                return false;
+            } else {
+                hideError();
+                return true;
+            }
+        }
+
+        // 解决数独
+        function solveSudoku() {
+            if (!validateInput()) {
+                return;
+            }
+            
+            const startTime = performance.now();
+            
+            try {
+                const result = solveSudokuPuzzle([...currentSudoku]);
+                const endTime = performance.now();
+                
+                solutionData = {
+                    ...result,
+                    solveTime: Math.round(endTime - startTime)
+                };
+                
+                displayResults(solutionData);
+                
+            } catch (error) {
+                showError('解题过程中发生错误：' + error.message);
+            }
+        }
+
+        // 核心解题算法
+        function solveSudokuPuzzle(puzzle) {
+            const original = [...puzzle];
+            const solutions = [];
+            
+            // 第一步：使用排除法
+            const eliminationResult = solveByElimination(puzzle);
+            const directSolved = eliminationResult.solved;
+            
+            // 统计空格数
+            const emptyCount = puzzle.filter(cell => cell === 0).length;
+            
+            if (emptyCount === 0) {
+                // 已完全解决
+                solutions.push({
+                    puzzle: [...puzzle],
+                    method: 'elimination'
+                });
+            } else {
+                // 需要枚举法
+                const enumerationSolutions = solveByEnumeration([...puzzle]);
+                solutions.push(...enumerationSolutions);
+            }
+            
+            return {
+                original: original,
+                emptyCount: original.filter(cell => cell === 0).length,
+                directCount: directSolved,
+                solutionCount: solutions.length,
+                solutions: solutions
+            };
+        }
+
+        // 排除法解题
+        function solveByElimination(puzzle) {
+            let changed = true;
+            let solvedCount = 0;
+            
+            while (changed) {
+                changed = false;
+                
+                for (let i = 0; i < 81; i++) {
+                    if (puzzle[i] !== 0) continue;
+                    
+                    const possible = getPossibleValues(puzzle, i);
+                    
+                    if (possible.length === 1) {
+                        puzzle[i] = possible[0];
+                        solvedCount++;
+                        changed = true;
+                    }
+                }
+            }
+            
+            return { solved: solvedCount };
+        }
+
+        // 获取可能的值
+        function getPossibleValues(puzzle, index) {
+            const row = Math.floor(index / 9);
+            const col = index % 9;
+            const boxRow = Math.floor(row / 3);
+            const boxCol = Math.floor(col / 3);
+            
+            const used = new Set();
+            
+            // 检查行
+            for (let j = 0; j < 9; j++) {
+                const value = puzzle[row * 9 + j];
+                if (value !== 0) used.add(value);
+            }
+            
+            // 检查列
+            for (let j = 0; j < 9; j++) {
+                const value = puzzle[j * 9 + col];
+                if (value !== 0) used.add(value);
+            }
+            
+            // 检查九宫格
+            for (let j = 0; j < 3; j++) {
+                for (let k = 0; k < 3; k++) {
+                    const checkRow = boxRow * 3 + j;
+                    const checkCol = boxCol * 3 + k;
+                    const value = puzzle[checkRow * 9 + checkCol];
+                    if (value !== 0) used.add(value);
+                }
+            }
+            
+            const possible = [];
+            for (let num = 1; num <= 9; num++) {
+                if (!used.has(num)) {
+                    possible.push(num);
+                }
+            }
+            
+            return possible;
+        }
+
+        // 枚举法解题
+        function solveByEnumeration(puzzle) {
+            const solutions = [];
+            
+            function backtrack(pos) {
+                if (pos === 81) {
+                    solutions.push([...puzzle]);
+                    return solutions.length < 10; // 限制最多找10个解
+                }
+                
+                if (puzzle[pos] !== 0) {
+                    return backtrack(pos + 1);
+                }
+                
+                const possible = getPossibleValues(puzzle, pos);
+                
+                for (const num of possible) {
+                    puzzle[pos] = num;
+                    if (!backtrack(pos + 1)) {
+                        puzzle[pos] = 0;
+                        return false;
+                    }
+                    puzzle[pos] = 0;
+                }
+                
+                return true;
+            }
+            
+            backtrack(0);
+            
+            return solutions.map(solution => ({
+                puzzle: solution,
+                method: 'enumeration'
+            }));
+        }
+
+        // 显示结果
+        function displayResults(data) {
+            document.getElementById('emptyCount').textContent = data.emptyCount;
+            document.getElementById('directCount').textContent = data.directCount;
+            document.getElementById('solutionCount').textContent = data.solutionCount;
+            document.getElementById('solveTime').textContent = data.solveTime + 'ms';
+            
+            const solutionsContainer = document.getElementById('solutions');
+            solutionsContainer.innerHTML = '';
+            
+            if (data.solutions.length === 0) {
+                solutionsContainer.innerHTML = '<p style="text-align: center; color: #666;">无解</p>';
+            } else {
+                data.solutions.forEach((solution, index) => {
+                    const solutionDiv = document.createElement('div');
+                    solutionDiv.innerHTML = `
+                        <h4 style="margin: 20px 0 10px; text-align: center; color: #4facfe;">
+                            解答 ${index + 1}
+                        </h4>
+                    `;
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'sudoku-result';
+                    
+                    for (let i = 0; i < 81; i++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'result-cell';
+                        cell.textContent = solution.puzzle[i] || '';
+                        
+                        // 确定单元格类型
+                        if (data.original[i] !== 0) {
+                            cell.classList.add('original');
+                        } else if (solution.puzzle[i] !== 0) {
+                            if (solution.method === 'elimination') {
+                                cell.classList.add('calculated');
+                            } else {
+                                cell.classList.add('enumerated');
+                            }
+                        }
+                        
+                        grid.appendChild(cell);
+                    }
+                    
+                    solutionDiv.appendChild(grid);
+                    solutionsContainer.appendChild(solutionDiv);
+                });
+            }
+            
+            document.getElementById('resultSection').style.display = 'block';
+        }
+
+        // 清空数独
+        function clearSudoku() {
+            currentSudoku = Array(81).fill(0);
+            const cells = document.querySelectorAll('.sudoku-cell');
+            cells.forEach(cell => {
+                cell.value = '';
+                cell.classList.remove('error');
+            });
+            document.getElementById('resultSection').style.display = 'none';
+            hideError();
+        }
+
+        // 加载示例
+        function loadExample(exampleIndex) {
+            if (exampleIndex < 0 || exampleIndex >= examples.length) return;
+            
+            const example = examples[exampleIndex];
+            currentSudoku = [...example];
+            
+            const cells = document.querySelectorAll('.sudoku-cell');
+            cells.forEach((cell, index) => {
+                cell.value = example[index] === 0 ? '' : example[index].toString();
+                cell.classList.remove('error');
+            });
+            
+            document.getElementById('resultSection').style.display = 'none';
+            hideError();
+        }
+
+        // 显示错误
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // 隐藏错误
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</html>
