@@ -14,6 +14,8 @@ export default [
     globals: {
       Vue: "readonly",
       VueRouter: "readonly",
+      VueI18n: "readonly",
+      Vuex: "readonly",
     },
   },
 
