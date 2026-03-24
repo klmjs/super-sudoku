@@ -1,6 +1,42 @@
 export const SUDOKU_COORDINATES = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 export const SUDOKU_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+export const flatten = function (arr, depth = 1) {
+  if (depth <= 0) {
+    return arr.slice();
+  }
+
+  const result = [];
+
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+
+    if (Array.isArray(item)) {
+      for (let j = 0; j < item.length; j++) {
+        result.push(item[j]);
+      }
+    } else {
+      result.push(item);
+    }
+  }
+
+  if (depth > 1) {
+    let needsFurtherFlattening = false;
+    for (let k = 0; k < result.length; k++) {
+      if (Array.isArray(result[k])) {
+        needsFurtherFlattening = true;
+        break;
+      }
+    }
+
+    if (needsFurtherFlattening) {
+      return flatten(result, depth - 1);
+    }
+  }
+
+  return result;
+};
+
 export const uniqBy = function (array, iteratee) {
   const seen = new Set();
   const result = [];

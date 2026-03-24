@@ -3,10 +3,19 @@ import {Container} from "./components/Layout.js";
 import Button from "./components/Button.js";
 import {DarkModeButton} from "./components/DarkModeButton.js";
 
-export default Vue.defineComponent({
+const {defineComponent} = Vue;
+
+const SelectGame = defineComponent({
+  name: "SelectGame",
+  components: {
+    Container,
+    DarkModeButton,
+    Button,
+    GameSelect,
+  },
   methods: {
-    goBack(event) {
-      this.$router.push('/');
+    goBack(ev) {
+      this.$router.push("/");
     },
   },
   template: `    
@@ -26,3 +35,5 @@ export default Vue.defineComponent({
   <GameSelect />
 </Container>`,
 });
+
+export default SelectGame;

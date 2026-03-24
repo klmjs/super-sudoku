@@ -1,5 +1,7 @@
 const {defineComponent} = Vue;
 
-export default defineComponent({
+const Game = defineComponent({
   template: `<h1> Component Game </h1>`,
 });
+
+export default Game;

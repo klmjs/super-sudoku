@@ -1,5 +1,4 @@
-import * as React from "react";
-import {useEffect, useState} from "react";
+const {defineComponent} = Vue;
 
 export const DarkModeButton = () => {
   const [darkMode, setDarkMode] = useState(() => {

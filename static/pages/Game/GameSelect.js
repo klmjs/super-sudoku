@@ -1,17 +1,12 @@
-import * as React from "react";
-
-import {getSudokusPaginated, SudokuRaw, useSudokuCollections} from "src/lib/game/sudokus";
-import {SimpleSudoku} from "src/lib/engine/types";
-import SudokuPreview from "../../components/sudoku/SudokuPreview";
-import {formatDuration} from "src/utils/format";
-import {useState} from "react";
-import Button from "src/components/Button";
-import {stringifySudoku} from "../../utility.js";
-
+import {getSudokusPaginated} from "../../sudokus.js";
+import {stringifySudoku, formatDuration} from "../../utility.js";
 import {translateCollectionName, lsPlayedSudoku} from "../../storage.js";
-import NewSudoku from "./NewSudoku.js";
 
-const TabItem = ({active, children, ...props}: React.ButtonHTMLAttributes<HTMLButtonElement> & {active: boolean}) => (
+import NewSudoku from "./NewSudoku.js";
+import Button from "../components/Button";
+import SudokuPreview from "../components/sudoku/SudokuPreview.js";
+
+const TabItem = ({active, children, ...props}) => (
   <button
     className={`px-1 xs:px-2 sm:px-4 text-xs sm:text-sm md:text-base py-2 pointer capitalize rounded-sm border-none hover:bg-gray-500 ${
       active ? "bg-white text-black dark:bg-gray-600 dark:text-white" : "bg-transparent text-white dark:text-gray-300"
@@ -28,13 +23,9 @@ const PageSelector = ({
   page,
   pageCount,
   setPage,
-}: {
-  page: number;
-  pageCount: number;
-  setPage: (page: number) => void;
 }) => {
   const getVisiblePages = () => {
-    const pages: (number | string)[] = [];
+    const pages = [];
     const current = page + 1; // Convert to 1-based for display
 
     // Always show first page
